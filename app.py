@@ -111,7 +111,19 @@ def build_pdf(data: dict) -> bytes:
     col_widths = [46, 80, 0, 82]
     col_widths[2] = WIDTH - (MARGIN * 2) - sum(w for w in col_widths if w)
 
-    table_data = [['QTY', 'SKU', 'DESCRIPTION', 'UNIT PRICE']] + data['line_items']
+    # Normalise line_items — accept either a list of lists or list of dicts
+    raw_items = data['line_items']
+    def normalise_item(item):
+        if isinstance(item, dict):
+            # Try common key names from DocuPipe / various sources
+            qty   = str(item.get('qty') or item.get('quantity') or item.get('QTY') or '')
+            sku   = str(item.get('sku') or item.get('SKU') or item.get('product_code') or '')
+            desc  = str(item.get('description') or item.get('desc') or item.get('DESCRIPTION') or '')
+            price = str(item.get('unit_price') or item.get('price') or item.get('UNIT PRICE') or '')
+            return [qty, sku, desc, price]
+        return list(item)
+    normalised_items = [normalise_item(i) for i in raw_items]
+    table_data = [['QTY', 'SKU', 'DESCRIPTION', 'UNIT PRICE']] + normalised_items
     t = Table(table_data, colWidths=col_widths, repeatRows=1)
     t.setStyle(TableStyle([
         ('FONTNAME',      (0, 0), (-1, 0), 'Helvetica-Bold'),
