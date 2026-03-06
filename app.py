@@ -118,9 +118,11 @@ def build_pdf(data: dict) -> bytes:
             qty   = str(item.get('quantity') or item.get('qty') or '')
             sku   = str(item.get('supplierItemNumber') or item.get('sku') or '')
             desc  = str(item.get('description') or '')
-            price = f"${item.get('unitPrice', '')}"
+            unit_price = item.get('unitPrice') or item.get('unit_price') or ''
+            price = f"${unit_price}" if unit_price != '' else ''
             return [qty, sku, desc, price]
-        return list(item)
+        # list of lists — already correct format
+        return [str(v) for v in item]
     normalised_items = [normalise_item(i) for i in raw_items]
     table_data = [['QTY', 'SKU', 'DESCRIPTION', 'UNIT PRICE']] + normalised_items
     t = Table(table_data, colWidths=col_widths, repeatRows=1)
@@ -183,6 +185,10 @@ def packing_slip():
     missing = [f for f in required if f not in data]
     if missing:
         return jsonify({"error": f"Missing fields: {', '.join(missing)}"}), 400
+
+    # If Make sends line_items as a single dict instead of a list, wrap it
+    if isinstance(data.get('line_items'), dict):
+        data['line_items'] = [data['line_items']]
 
     try:
         pdf_bytes = build_pdf(data)
