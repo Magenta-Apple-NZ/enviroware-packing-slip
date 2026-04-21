@@ -1,17 +1,33 @@
 # Enviroware Packing Slip Service
 
-A lightweight Flask webhook that accepts order JSON and returns a formatted PDF packing slip.
+A lightweight Flask app that generates formatted PDF packing slips. Use it two ways:
+
+- **Web form** — open the root URL in a browser, fill in the order details, download the PDF.
+- **JSON webhook** — POST order data to `/packing-slip` and get a PDF back (used by Make.com / DocuPipe).
 
 ---
 
-## Deploy to Railway (recommended)
+## Deploy to Render
 
 1. Push this folder to a GitHub repo
-2. Go to [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo**
-3. Select your repo — Railway auto-detects the Procfile and deploys
-4. Once live, copy your public URL (e.g. `https://your-app.up.railway.app`)
+2. Go to [render.com](https://render.com) → **New** → **Web Service** → **Build and deploy from a Git repository**
+3. Select your repo — Render auto-detects the `Procfile` (`web: gunicorn app:app ...`) and deploys
+4. Once live, copy your public URL (e.g. `https://your-app.onrender.com`)
 
-No environment variables needed.
+No environment variables needed. Render will auto-redeploy on every push to `main`.
+
+---
+
+## Web UI
+
+Open the service URL (e.g. `https://your-app.onrender.com/`) in a browser. The form lets you:
+
+- Enter invoice number and PO
+- Add / remove ship-to lines
+- Add / remove line items (QTY, SKU, description, unit price)
+- Click **Generate & Download PDF** — the browser downloads `PKS{invoice_no}.pdf`
+
+Sender details (address, phone, email) are pre-filled with Enviroware defaults but editable per-slip.
 
 ---
 
@@ -59,7 +75,7 @@ After your existing DocuPipe webhook step, add these modules:
 ### Module 1 — HTTP: Make a request
 | Field | Value |
 |---|---|
-| URL | `https://your-app.up.railway.app/packing-slip` |
+| URL | `https://your-app.onrender.com/packing-slip` |
 | Method | `POST` |
 | Body type | `Raw` |
 | Content type | `application/json` |

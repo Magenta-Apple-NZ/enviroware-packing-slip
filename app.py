@@ -1,6 +1,6 @@
 import io
 import os
-from flask import Flask, request, jsonify, send_file, render_template
+from flask import Flask, request, jsonify, send_file
 from reportlab.lib.pagesizes import A4
 from reportlab.pdfgen import canvas
 from reportlab.lib import colors
@@ -170,7 +170,7 @@ def build_pdf(data: dict) -> bytes:
 
 @app.route("/", methods=["GET"])
 def index():
-    return render_template("index.html")
+    return send_file(os.path.join(os.path.dirname(__file__), "index.html"))
 
 
 @app.route("/health", methods=["GET"])
